@@ -1,4 +1,5 @@
 -- SQLBook: Code
+\c easystretch_db;
 /*Début/lancement du script */
 BEGIN;
 

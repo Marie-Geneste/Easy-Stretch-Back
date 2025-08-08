@@ -1,4 +1,0 @@
-CREATE ROLE marie WITH LOGIN PASSWORD 'azerty';
-
-CREATE DATABASE database OWNER marie;
-

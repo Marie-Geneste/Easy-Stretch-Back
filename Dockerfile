@@ -1,4 +1,5 @@
 #docker build --file Node.Dockerfile "." -t firstimage
+# docker run -d --name nodecontainer firstimage
 FROM node:24
 
 WORKDIR /O-Stretch--Back

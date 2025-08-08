@@ -1,0 +1,71 @@
+# Restart des dockers (reload des fichiers modifier si node daemon ne le fait pas)
+# docker-compose restart
+# Rebuild complet des dockers mais avec persistance
+# docker-compose up -d
+# Rentrer dans le docker postgresql (changer le nom si besoin d'aller dans les autres)
+# docker exec -ti postgrecontainer bash
+
+services:
+#   frontend:
+#     image: firstimage
+#     ports:
+#       - "443:8043"
+#     networks:
+#       - front-tier
+#       - back-tier
+#     configs:
+#       - httpd-config
+#     secrets:
+#       - server-certificate
+
+  backend:
+    container_name: nodecontainer
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./app:/O-Stretch--Back/app
+      - ./package.json:/O-Stretch--Back/package.json
+      - ./.env:/O-Stretch--Back/.env
+      - ./index.js:/O-Stretch--Back/index.js
+    #volumes:
+    #  - db-data:/etc/data
+    # networks:
+    #   - back-tier
+    depends_on:
+      - postgresql
+
+  postgresql:
+    container_name: postgrecontainer
+    build: 
+      context: .
+      dockerfile: Postgres.Dockerfile
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: marie
+      POSTGRES_PASSWORD: azerty
+      POSTGRES_DB: easystretch_db
+
+volumes:
+   db-data:
+#     driver: flocker
+#     driver_opts:
+#       size: "10GiB"
+
+# configs:
+#   httpd-config:
+#     external: true
+
+# secrets:
+#   server-certificate:
+#     external: true
+
+# networks:
+#   # The presence of these objects is sufficient to define them
+#   front-tier: {}
+#   back-tier: {}
