@@ -4,19 +4,30 @@
 # docker-compose up -d
 # Rentrer dans le docker postgresql (changer le nom si besoin d'aller dans les autres)
 # docker exec -ti postgrecontainer bash
+#se connecter à la base
+#psql -U marie -d easystretch_db
 
 services:
-#   frontend:
-#     image: firstimage
-#     ports:
-#       - "443:8043"
-#     networks:
-#       - front-tier
-#       - back-tier
-#     configs:
-#       - httpd-config
-#     secrets:
-#       - server-certificate
+  frontend:
+    container_name: reactcontainer
+    build:
+      context: ../O-Stretch--Front       
+      dockerfile: Dockerfile
+    environment:
+      - REACT_APP_BASE_URL=http://localhost:3000
+      - HOST=0.0.0.0
+      - PORT=3001
+      - CHOKIDAR_USEPOLLING=true           
+      - WATCHPACK_POLLING=true
+    ports:
+      - "3001:3001"                        
+    volumes:
+      - ../O-Stretch--Front:/O-Stretch--Front
+      - /O-Stretch--Front/node_modules     
+    depends_on:
+      - backend
+    command: ["npm", "start"]
+
 
   backend:
     container_name: nodecontainer

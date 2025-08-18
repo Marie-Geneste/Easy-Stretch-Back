@@ -1,31 +1,42 @@
--- SQLBook: Code
 \c easystretch_db;
-/*Début/lancement du script */
 BEGIN;
 
-/*Permet de modifier la table user existante et de drop la contrainte user_role_id_fkey */
-ALTER TABLE "user" DROP CONSTRAINT user_role_id_fkey;
+/* vider dans un ordre sûr */
+TRUNCATE TABLE "order_item" CASCADE;
+TRUNCATE TABLE "order" CASCADE;
+TRUNCATE TABLE "product" CASCADE;
 
-/*Permet de modifier la table stretch existante et de drop la contrainte stretch_category_id_fkey */
-ALTER TABLE "stretch" DROP CONSTRAINT stretch_category_id_fkey;
-
-/* TRUNCATE -- vide une table ou un ensemble de tables */
-/* CASCADE -- vidde toutes les tables qui ont des références de clés étrangères sur une des tables nommées */
-/* Donc vide la table user */
-TRUNCATE TABLE "user" CASCADE;
-
-/* Insertion/seeding des données dans la table user : en l'occurence ici un user */
-INSERT INTO "user" ("id", "email", "password", "username", "biography", "role_id") VALUES 
-    (1,'marie.e.geneste@gmail.com', '$2b$10$7WDPLMcEOov3yv8fC2kJUOXSEz93/tGTRU8J4V51E3d69kb/dRA1e', 'Stretchy', 'blabla', 1);
-    
-
-/* Donc vide la table stretch */
+TRUNCATE TABLE "user_stretch" CASCADE;
 TRUNCATE TABLE "stretch" CASCADE;
+TRUNCATE TABLE "category" CASCADE;
+TRUNCATE TABLE "user" CASCADE;
+TRUNCATE TABLE "role" CASCADE;
 
-/* Insertion/seeding des données dans la table stretch : en l'occurence ici tous nos étirements avec dans l'odre : */
-/* Son id, son titre, son description_content, sa main_image, son description_image et son category_id */
-/*VALUES = les valeurs */
-INSERT INTO "stretch" ("id", "title", "description_content", "main_image", "description_image", "category_id") VALUES
+/* ====== role ====== */
+INSERT INTO "role" ("id","name") VALUES
+  (1,'admin'),
+  (2,'user');
+
+/* ====== user ====== */
+INSERT INTO "user" ("id","email","password","username","role_id")
+VALUES (1,'marie.e.geneste@gmail.com','$2b$10$7WDPLMcEOov3yv8fC2kJUOXSEz93/tGTRU8J4V51E3d69kb/dRA1e','Stretchy', 1);
+
+/* ====== category ====== */
+INSERT INTO "category" ("id","name") VALUES
+  (1, 'Cou'),
+  (2, 'Bras'),
+  (3, 'Avant-bras'),
+  (4, 'Poitrine'),
+  (5, 'Ventre'),
+  (6, 'Dos'),
+  (7, 'Hanche'),
+  (8, 'Fessier'),
+  (9, 'Cuisse'),
+  (10,'Jambe'),
+  (11,'Pied');
+
+/* ====== stretch ====== */
+INSERT INTO "stretch" ("id","name","description","main_image","description_image","category_id") VALUES
     (1, 'Trapèze', 'Poser une main sur une épaule afin de la maintenir vers le bas. Incliner la tête du côté opposé et ,tout en gardant l''inclinaison, pencher la tête en avant.', 'https://i.ibb.co/BKN2SBB/1.webp', '', 1),
     (2, 'SCOM (Sterno-Cléïdo-Occipito-Mastoïdien)', 'Pour étirer le SCOM droit (par exemple) : Poser les doigts de la main gauche sur la clavicule droite (partie centrale). Basculer la tête en arrière (extension) et tourner la tête à droite.', 'https://i.ibb.co/CM7vWQ3/2.webp', '', 1),
     (3, 'Biceps', 'Tendre le bras devant soi et tendre la main vers le bas. Avec l''autre main, maintenir les doigts de la main dont le bras est tendu vers le bas.', 'https://i.ibb.co/gZwCLZT/3.webp', '', 2),
@@ -47,51 +58,27 @@ INSERT INTO "stretch" ("id", "title", "description_content", "main_image", "desc
     (19, 'Inversion','Faire une pointe avec le pied avec les orteils vers l''intérieur','https://i.ibb.co/VTyJHV6/19.webp','', 11 ),
     (20, 'Eversion ','Basculer le pied côté externe en faisant une flexion dorsale (orienté le pied vers l''extérieur et le haut).','https://i.ibb.co/2W8yYvL/20.webp','', 11);
 
-/* Donc vide la table category */
-TRUNCATE TABLE "category" CASCADE;
+/* ====== produits ====== */
+INSERT INTO "product" ("id","name","description","price","stock","image") VALUES
+  (1, 'Élastique de traction', 'Bandes élastiques pour assistance aux tractions.', 14.90, 50, 'https://pics.example.com/elastic-traction.webp'),
+  (2, 'Tapis de sol', 'Tapis antidérapant pour étirements et yoga.', 24.90, 30, 'https://pics.example.com/yoga-mat.webp'),
+  (3, 'Roue d’étirement du dos', 'Roue pour ouverture thoracique et étirement du dos.', 39.90, 20, 'https://pics.example.com/back-wheel.webp');
 
-/* Insertion/seeding des données dans la table category */
-INSERT INTO "category" ("id", "name") VALUES
-    (1, 'Cou'),
-    (2, 'Bras'),
-    (3, 'Avant-bras'),
-    (4, 'Poitrine'),
-    (5, 'Ventre'),
-    (6, 'Dos'),
-    (7, 'Hanche'),
-    (8, 'Fessier'),
-    (9, 'Cuisse'),
-    (10, 'Jambe'),
-    (11, 'Pied');
+/* ====== commande démo ====== */
+/* total_price calculé dès l'INSERT : 2*14.90 + 1*24.90 = 54.70 */
+INSERT INTO "order" ("id","user_id","total_price","delivery_address","billing_address","payment_status","order_status")
+VALUES (1, 1, 54.70, '12 rue des Étirements, 75000 Paris', '12 rue des Étirements, 75000 Paris', 'paid', 'processing');
 
-/* Donc vide la table role */
-TRUNCATE TABLE "role" CASCADE;
+INSERT INTO "order_item" ("order_id","product_id","quantity","price") VALUES
+  (1, 1, 2, 14.90),
+  (1, 2, 1, 24.90);
 
-/* Insertion/seeding des données dans la table role */
-INSERT INTO "role" ("id", "name") VALUES
-(1, 'admin'),
-(2, 'user');
+/* ====== réalignement des séquences ====== */
+SELECT setval('role_id_seq',      (SELECT COALESCE(MAX(id),1) FROM "role"));
+SELECT setval('user_id_seq',      (SELECT COALESCE(MAX(id),1) FROM "user"));
+SELECT setval('category_id_seq',  (SELECT COALESCE(MAX(id),1) FROM "category"));
+SELECT setval('stretch_id_seq',   (SELECT COALESCE(MAX(id),1) FROM "stretch"));
+SELECT setval('product_id_seq',   (SELECT COALESCE(MAX(id),1) FROM "product"));
+SELECT setval('"order_id_seq"',   (SELECT COALESCE(MAX(id),1) FROM "order"));
 
-/* Donc vide la table role */
-TRUNCATE TABLE "user_stretch" CASCADE;
-
-/* Insertion/seeding des données dans la table user_stretch */
--- INSERT INTO "user_stretch" ("user_id", "stretch_id") VALUES
--- (0, 1),
--- (0, 2);
-
-
-/* Ajoute une contrainte de clé étrangère à la table "user" qui référence la colonne "id" de la table "role". 
-Cela signifie que la valeur de la colonne "role_id" de la table "user" doit correspondre à une valeur existante dans la colonne "id" de la table "role".*/
-ALTER TABLE "user" ADD FOREIGN KEY ("role_id") REFERENCES "role"("id");
-
-/* Ajoute une contrainte de clé étrangère à la table "stretch" qui référence la colonne "id" de la table "category". 
-Cela signifie que la valeur de la colonne "category_id" de la table "stretch" doit correspondre à une valeur existante dans la colonne "id" de la table "category".*/
-ALTER TABLE "stretch" ADD FOREIGN KEY ("category_id") REFERENCES "category"("id");
-
--- Note : Postgres, avec le fait d'ajouter IDENTITY BY DEFAULT au lieu de ALWAYS, ne met pas à jour le curseur de l'incrément de la séquence de façon implicite !
--- Il faut donc mettre à jour la valeur courante de chacune des séquences en séléctionnant l'id maximum de chaque table une fois le seeding terminé.
-SELECT setval('stretch_id_seq', (SELECT MAX(id) from "stretch"));
-
-/*Fin du script */
 COMMIT;

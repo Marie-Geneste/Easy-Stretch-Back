@@ -188,14 +188,14 @@ const userController = {
         const userFound = await User.findByPk(userId);
         //refactoriser avec le rest operator pour envoyer qu'une partie des données
         // eslint-disable-next-line no-unused-vars
-        const { id, email, password, ...filtredUserInfo } = { id: userFound.id, email: userFound.email, password: userFound.password, username : userFound.username, biography : userFound.biography, role_id: userFound.role_id};
+        const { id, email, password, ...filtredUserInfo } = { id: userFound.id, email: userFound.email, password: userFound.password, username : userFound.username, role_id: userFound.role_id};
         //renvoyer le user trouvé dans la réponse json
         res.json({ filtredUserInfo })
     },
 
     async updateUser(req, res) {
         //on destructure les infos du user
-        const {  username,  biography } = req.body;
+        const {  username } = req.body;
 
         // if (!email && !username && !password) { // Si le client veut faire un update sans préciser aucun nouveau champs, on bloque.
         //     return res.status(400).json({ error: "Invalid body. Should provide at least a 'username', 'email' or 'password' property" });
@@ -206,10 +206,6 @@ const userController = {
 
         if (username !== undefined) { // Si il y a une nouveau pseudo
             userToUpdate.username = username;
-        }
-
-        if (biography !== undefined) { // Si il y a une nouveau pseudo
-            userToUpdate.biography = biography;
         }
 
         await userToUpdate.save();

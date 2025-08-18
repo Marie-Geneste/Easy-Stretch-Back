@@ -12,7 +12,7 @@ const stretchController = {
             const filtredStretches = stretches.map(etirement => {
                 return {
                     id : etirement.id,
-                    title: etirement.title,
+                    name: etirement.name,
                     main_image: etirement.main_image,
                     categorie_id: etirement.category_id
                 };
@@ -47,16 +47,16 @@ const stretchController = {
     async createStretch(req, res) {
         try {
             const {
-                title,
-                description_content, 
+                name,
+                description, 
                 main_image, 
                 description_image,
                 category_id,
             } = req.body;
 
             const newStretch = await Stretch.create({ 
-                title,
-                description_content, 
+                name,
+                description, 
                 main_image, 
                 description_image,
                 category_id
@@ -65,8 +65,8 @@ const stretchController = {
             res.status(201).json({
                 stretch: {
                     id: newStretch.id,
-                    title: newStretch.title,
-                    description_content: newStretch.description_content,
+                    name: newStretch.name,
+                    description: newStretch.description,
                     main_image: newStretch.main_image,
                     description_image: newStretch.description_image,
                     category_id: newStretch.category_id
@@ -83,34 +83,34 @@ const stretchController = {
     // Mise à jour de l'étirement avec l'identifiant spécifié
     async updateStretch(req, res) {
 
-        const { title, description_content, main_image, description_image, category_id } = req.body;
+        const { name, description, main_image, description_image, category_id } = req.body;
 
         // Si aucun champs n'est modifié,
-        if (!title && !description_content && !main_image && !description_image && !category_id) {
-            return res.status(400).json({ error: "Invalid body. Should provide at least a 'title', 'description_content', 'main_image', 'description_image' or 'category_id' property" });
+        if (!name && !description && !main_image && !description_image && !category_id) {
+            return res.status(400).json({ error: "Invalid body. Should provide at least a 'name', 'description', 'main_image', 'description_image' or 'category_id' property" });
         }
 
         const stretchId = req.params.id;
         //trouver l'user correspondant à l'id
         const stretchToUpdate = await Stretch.findByPk(stretchId);
 
-        if (title !== undefined) { // Si il y a un nouveau mail
-            stretchToUpdate.title = title;
+        if (name !== undefined) { // Si il y a un nouveau mail
+            stretchToUpdate.name = name;
         }
 
-        if (description_content !== undefined) { // Si il y a une nouveau pseudo
-            stretchToUpdate.description_content = description_content;
+        if (description !== undefined) { // Si il y a une nouvelle description
+            stretchToUpdate.description = description;
         }
 
-        if (main_image !== undefined) { // Si il y a une nouveau pseudo
+        if (main_image !== undefined) { // Si il y a un nouveau pseudo
             stretchToUpdate.main_image = main_image;
         }
 
-        if (description_image !== undefined) { // Si il y a une nouveau pseudo
+        if (description_image !== undefined) { // Si il y a une nouvelle image de description
             stretchToUpdate.description_image = description_image;
         }
 
-        if (category_id !== undefined) { // Si il y a une nouveau pseudo
+        if (category_id !== undefined) { // Si il y a modification de la catégorie
             stretchToUpdate.category_id = category_id;
         }
 

@@ -17,9 +17,6 @@ User.init({
         type: DataTypes.STRING,
         allowNull: false
     },
-    biography: {
-        type: DataTypes.STRING
-    },
     role_id: {
         type: DataTypes.INTEGER,
     }

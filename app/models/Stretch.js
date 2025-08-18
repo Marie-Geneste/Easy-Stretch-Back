@@ -4,11 +4,11 @@ const sequelize = require("./sequelize-client");
 class Stretch extends Model {}
 
 Stretch.init({
-    title: {
+    name: {
         type: DataTypes.STRING,
         allowNull: false
     },
-    description_content: {
+    description: {
         type: DataTypes.STRING,
         allowNull: false
     },
