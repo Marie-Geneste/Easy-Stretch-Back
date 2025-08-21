@@ -6,6 +6,7 @@ const emailValidator = require("email-validator");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const sanitizeHtml = require('sanitize-html');
+const sendEmail = require('../utils/sendEmailForResetPwd');
 
 // Function to hash a given password
 async function hashPassword(password) {
@@ -227,7 +228,79 @@ const userController = {
 
         // Réponse
         res.status(204).end();
+    },
+
+    async checkEmail(req, res) {
+        const { email } = req.query;
+
+        if (!email) {
+            return res.status(400).json({ message: "Email manquant" });
+        }
+
+        try {
+            const existingUser = await User.findOne({ where: { email } });
+            res.json({ exists: !!existingUser });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "Erreur serveur" });
+        }
+    },
+
+    async forgotPassword (req, res) {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ message: 'Email manquant.' });
+        }
+        try {
+            const user = await User.findOne({ where: { email } });
+            if (!user) {
+            return res.status(404).json({ message: 'Aucun utilisateur trouvé avec cet email.' });
+            }
+
+            // Générer un token JWT avec expiration courte
+            const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '15m' });
+
+            const resetLink = `${process.env.FRONT_URL}/reset-password?token=${token}`;
+
+            // Envoi de l'email
+            await sendEmail(email, 'Réinitialisation du mot de passe', `
+            Cliquez sur ce lien pour réinitialiser votre mot de passe : 
+            ${resetLink}
+            (valide 15 minutes)
+            `);
+
+            res.json({ message: 'Email de réinitialisation envoyé.' });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ message: 'Erreur interne du serveur.' });
+        }
+    },
+
+    async resetPassword (req, res) {
+        const { token, newPassword } = req.body;
+
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const user = await User.findByPk(decoded.userId);
+
+            if (!user) {
+            return res.status(404).json({ message: 'Utilisateur introuvable.' });
+            }
+
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            user.password = hashedPassword;
+            await user.save();
+
+            res.json({ message: 'Mot de passe réinitialisé avec succès.' });
+        } catch (err) {
+            console.error(err);
+            if (err.name === 'TokenExpiredError') {
+            return res.status(400).json({ message: 'Le lien de réinitialisation a expiré.' });
+            }
+            res.status(400).json({ message: 'Lien invalide.' });
+        }
     }
+
 };
 
 module.exports = userController;
