@@ -25,7 +25,8 @@ const userController = {
             username,
             email,
             password,
-            passwordConfirm
+            passwordConfirm,
+            captchaToken
         } = req.body;
 
         // Sanitize user inputs to prevent XSS attacks
@@ -49,6 +50,15 @@ const userController = {
 
         try {
 
+             // Vérifier le captcha auprès de Google
+            const captchaResponse = await axios.post(
+            `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${captchaToken}`
+            );
+
+            if (!captchaResponse.data.success) {
+            return res.status(400).json({ message: "Captcha invalide" });
+            }
+            
             // Check if the user already exists
             const alreadyExistingUser = await User.findOne({
                 where: {
