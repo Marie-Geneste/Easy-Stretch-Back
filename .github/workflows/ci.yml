@@ -44,6 +44,28 @@ jobs:
             sleep 1
           done
 
+      - name: Create .env.dev file
+        working-directory: O-Stretch--Back
+        run: |
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env.dev
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env.dev
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env.dev
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env.dev
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env.dev
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env.dev
+          echo "PORT=${{ secrets.PORT }}" >> .env.dev
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env.dev
+          echo "GMAIL_USER=${{ secrets.GMAIL_USER }}" >> .env.dev
+          echo "MACPASS=${{ secrets.MACPASS }}" >> .env.dev
+          echo "WINDOWSPASS=${{ secrets.WINDOWSPASS }}" >> .env.dev
+          echo "EMAIL_PASS=${{ secrets.EMAIL_PASS }}" >> .env.dev
+          echo "RECAPTCHA_SECRET_KEY=${{ secrets.RECAPTCHA_SECRET_KEY }}" >> .env.dev
+          echo "FRONT_URL=${{ secrets.FRONT_URL }}" >> .env.dev
+          echo "REACT_APP_BASE_URL=${{ secrets.REACT_APP_BASE_URL }}" >> .env.dev
+          echo "REACT_APP_RECAPTCHA_SITE_KEY=${{ secrets.REACT_APP_RECAPTCHA_SITE_KEY }}" >> .env.dev
+          echo "HOST=${{ secrets.HOST }}" >> .env.dev
+          echo "PORT_FRONT=${{ secrets.PORT_FRONT }}" >> .env.dev
+
       - name: Build backend image
         run: docker compose build backend
 
@@ -66,6 +88,20 @@ jobs:
   frontend-tests:
     runs-on: ubuntu-latest
     env:
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PORT: ${{ secrets.PORT }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      GMAIL_USER: ${{ secrets.GMAIL_USER }}
+      MACPASS: ${{ secrets.MACPASS }}
+      WINDOWSPASS: ${{ secrets.WINDOWSPASS }}
+      EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+      RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
+      FRONT_URL: ${{ secrets.FRONT_URL }}
       REACT_APP_BASE_URL: ${{ secrets.REACT_APP_BASE_URL }}
       REACT_APP_RECAPTCHA_SITE_KEY: ${{ secrets.REACT_APP_RECAPTCHA_SITE_KEY }}
       HOST: ${{ secrets.HOST }}
