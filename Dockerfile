@@ -6,7 +6,7 @@ WORKDIR /O-Stretch--Back
 
 COPY ./app app
 COPY package.json .
-COPY .env .
+COPY .env.dev .
 COPY index.js .
 
 RUN npm install 

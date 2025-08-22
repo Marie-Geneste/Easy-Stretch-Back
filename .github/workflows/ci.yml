@@ -1,0 +1,68 @@
+
+name: CI (dev/test via docker compose)
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Start DB only (compose + .env.dev)
+        run: |
+          docker compose --env-file .env.dev up -d postgresql
+          # Attendre que Postgres soit prêt
+          for i in {1..30}; do
+            docker exec postgrecontainer pg_isready -U "${POSTGRES_USER:-marie}" -d "${POSTGRES_DB:-easystretch_dev}" && break
+            sleep 1
+          done
+
+      - name: Build backend image
+        run: docker compose --env-file .env.dev build backend
+
+      - name: Run backend migrations (inside container)
+        run: |
+          docker compose --env-file .env.dev run --rm \
+            -e NODE_ENV=test \
+            backend sh -c "npm ci && npx sequelize-cli db:migrate"
+
+      - name: Run backend tests (inside container)
+        run: |
+          docker compose --env-file .env.dev run --rm \
+            -e NODE_ENV=test \
+            backend sh -c "npm test"
+
+      - name: Compose down
+        if: always()
+        run: docker compose --env-file .env.dev down -v
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build frontend image
+        run: docker compose --env-file .env.dev build frontend
+
+      - name: Run frontend tests (inside container)
+        run: |
+          docker compose --env-file .env.dev run --rm \
+            frontend sh -c "npm ci && npm test -- --watchAll=false"
+
+      - name: Compose down (noop if nothing up)
+        if: always()
+        run: docker compose --env-file .env.dev down -v
