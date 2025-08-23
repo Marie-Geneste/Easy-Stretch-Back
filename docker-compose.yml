@@ -7,25 +7,25 @@
 #se connecter à la base
 #psql -U marie -d easystretch_db
 # Rebuild avec le .env qu'on souhaite
-#docker compose --env-file .env.dev up -d --build
+#docker compose --env-file .env up -d --build
 #docker compose --env-file .env.prod up -d --build
 
 services:
   frontend:
     container_name: reactcontainer
     build:
-      context: ../O-Stretch--Front       
+      context: ../Easy-Stretch-Front     
       dockerfile: Dockerfile
     ports:
       - "${PORT_FRONT}:${PORT_FRONT}"                    
     volumes:
-      - ../O-Stretch--Front:/O-Stretch--Front
-      - /O-Stretch--Front/node_modules
+      - ../Easy-Stretch-Front:/Easy-Stretch-Front
+      - /Easy-Stretch-Front/node_modules
     environment:
       REACT_APP_BASE_URL: ${REACT_APP_BASE_URL}
       REACT_APP_RECAPTCHA_SITE_KEY: ${REACT_APP_RECAPTCHA_SITE_KEY}
       HOST: ${HOST}
-      PORT_FRONT: ${PORT_FRONT}
+      PORT: ${PORT_FRONT}
     depends_on:
       - backend
     command: ["npm", "start"]
@@ -36,13 +36,12 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+      target: dev
     ports:
       - "${PORT}:${PORT}"
     volumes:
-      - ./app:/O-Stretch--Back/app
-      - ./package.json:/O-Stretch--Back/package.json
-      - ./.env:/O-Stretch--Back/.env
-      - ./index.js:/O-Stretch--Back/index.js
+      - ../Easy-Stretch-Back:/Easy-Stretch-Back
+      - /Easy-Stretch-Back/node_modules
     environment:
       DATABASE_URL: ${DATABASE_URL}
       PORT: ${PORT}
