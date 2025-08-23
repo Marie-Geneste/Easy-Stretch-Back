@@ -22,15 +22,15 @@ services:
       context: ../Easy-Stretch-Front     
       dockerfile: Dockerfile
     ports:
-      - "${PORT_FRONT}:${PORT_FRONT}"                    
+      - "${PORT_FRONT:-3001}:${PORT_FRONT:-3001}"                    
     volumes:
       - ../Easy-Stretch-Front:/Easy-Stretch-Front
       - /Easy-Stretch-Front/node_modules
     environment:
-      REACT_APP_BASE_URL: ${REACT_APP_BASE_URL}
-      REACT_APP_RECAPTCHA_SITE_KEY: ${REACT_APP_RECAPTCHA_SITE_KEY}
-      HOST: ${HOST}
-      PORT: ${PORT_FRONT}
+      HOST: ${HOST:-0.0.0.0}
+      PORT: ${PORT_FRONT:-3001}
+      REACT_APP_BASE_URL: ${REACT_APP_BASE_URL:-}
+      REACT_APP_RECAPTCHA_SITE_KEY: ${REACT_APP_RECAPTCHA_SITE_KEY:-}
     depends_on:
       - backend
     command: ["npm", "start"]
