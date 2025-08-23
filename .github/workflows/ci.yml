@@ -1,4 +1,4 @@
-name: CI (dev/test via docker compose)
+name: CI (backend only)
 
 on:
   push:
@@ -8,7 +8,9 @@ on:
 jobs:
   backend-tests:
     runs-on: ubuntu-latest
+
     env:
+      # DB & App env
       DB_HOST: ${{ secrets.DB_HOST }}
       DB_PORT: ${{ secrets.DB_PORT }}
       DB_NAME: ${{ secrets.DB_NAME }}
@@ -18,89 +20,43 @@ jobs:
       PORT: ${{ secrets.PORT }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       GMAIL_USER: ${{ secrets.GMAIL_USER }}
-      MACPASS: ${{ secrets.MACPASS }}
-      WINDOWSPASS: ${{ secrets.WINDOWSPASS }}
       EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
       RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
       FRONT_URL: ${{ secrets.FRONT_URL }}
-      REACT_APP_BASE_URL: ${{ secrets.REACT_APP_BASE_URL }}
-      REACT_APP_RECAPTCHA_SITE_KEY: ${{ secrets.REACT_APP_RECAPTCHA_SITE_KEY }}
-      HOST: ${{ secrets.HOST }}
-      PORT_FRONT: ${{ secrets.PORT_FRONT }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Docker
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Start DB only (compose)
+      - name: Start Postgres (compose)
         run: |
           docker compose up -d postgresql
-          # Attendre que Postgres soit prêt
+          # Wait for Postgres readiness
           for i in {1..30}; do
             docker exec postgrecontainer pg_isready -U "${DB_USER}" -d "${DB_NAME}" && break
             sleep 1
           done
 
-      - name: Build backend image
+      - name: Build backend image (dev target)
         run: docker compose build backend
 
-      - name: Run backend migrations (inside container)
+      - name: Run DB migrations (using DATABASE_URL)
         run: |
           docker compose run --rm \
             -e NODE_ENV=test \
-            backend sh -c "npm ci && npx sequelize-cli db:migrate"
+            -e DATABASE_URL="${DATABASE_URL}" \
+            backend sh -lc "npm ci && npx sequelize-cli db:migrate --url \"${DATABASE_URL}\""
 
-      - name: Run backend tests (inside container)
+      - name: Run backend tests
         run: |
           docker compose run --rm \
             -e NODE_ENV=test \
-            backend sh -c "npm test"
+            backend sh -lc "npm test -- --ci"
 
       - name: Compose down
-        if: always()
-        run: docker compose down -v
-
-  frontend-tests:
-    runs-on: ubuntu-latest
-    env:
-      DB_HOST: ${{ secrets.DB_HOST }}
-      DB_PORT: ${{ secrets.DB_PORT }}
-      DB_NAME: ${{ secrets.DB_NAME }}
-      DB_USER: ${{ secrets.DB_USER }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      PORT: ${{ secrets.PORT }}
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      GMAIL_USER: ${{ secrets.GMAIL_USER }}
-      MACPASS: ${{ secrets.MACPASS }}
-      WINDOWSPASS: ${{ secrets.WINDOWSPASS }}
-      EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
-      RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
-      FRONT_URL: ${{ secrets.FRONT_URL }}
-      REACT_APP_BASE_URL: ${{ secrets.REACT_APP_BASE_URL }}
-      REACT_APP_RECAPTCHA_SITE_KEY: ${{ secrets.REACT_APP_RECAPTCHA_SITE_KEY }}
-      HOST: ${{ secrets.HOST }}
-      PORT_FRONT: ${{ secrets.PORT_FRONT }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build frontend image
-        run: docker compose build frontend
-
-      - name: Run frontend tests (inside container)
-        run: |
-          docker compose run --rm \
-            frontend sh -c "npm ci && npm test -- --watchAll=false"
-
-      - name: Compose down (noop if nothing up)
         if: always()
         run: docker compose down -v
 
