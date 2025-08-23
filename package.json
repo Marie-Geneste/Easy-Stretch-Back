@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest --ci --watchAll=false --passWithNoTests"
+    "test": "jest --ci --watchAll=false --passWithNoTests",
+    "lint": "eslint . --max-warnings=0",
+    "format": "prettier --write ."
   },
   "repository": {
     "type": "git",
@@ -34,7 +36,9 @@
   },
   "devDependencies": {
     "eslint": "^8.34.0",
+    "eslint-config-prettier": "^10.1.8",
     "jest": "^30.0.5",
+    "prettier": "^3.6.2",
     "supertest": "^7.1.4"
   }
 }
