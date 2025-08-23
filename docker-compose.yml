@@ -1,7 +1,11 @@
 # Restart des dockers (reload des fichiers modifier si node daemon ne le fait pas)
 # docker-compose restart
 # Rebuild complet des dockers mais avec persistance
+#docker compose --profile front up -d --build
+#Lancement global
 # docker-compose up -d
+#Lancement global avec le front en profile
+#docker compose --profile front up -d
 # Rentrer dans le docker postgresql (changer le nom si besoin d'aller dans les autres)
 # docker exec -ti postgrecontainer bash
 #se connecter à la base
@@ -12,6 +16,7 @@
 
 services:
   frontend:
+    profiles: ["front"]   # <-- NE TOURNE QUE SI ce profile est activé
     container_name: reactcontainer
     build:
       context: ../Easy-Stretch-Front     
