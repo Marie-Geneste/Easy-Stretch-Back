@@ -51,11 +51,20 @@ app.use(userMiddleware.decodeToken);
 // on utlise .none() pour dire qu'on attends pas de fichier, uniquement des inputs "classiques" !
 // app.use( bodyParser.none() );
 
+// Pour un test
+app.get('/health', (req, res) => res.status(200).send('ok'));
+
+
 // Router
 app.use(router);
 
-// Lancer l'app
+// Lancer l'app si pas en env de test
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
+
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(port, () => {
     console.log(`Listening at http://localhost:${port}`);
-});
+  });
+}
+
+module.exports = app;
