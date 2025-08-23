@@ -10,13 +10,14 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # DB & App env
+      # Vars DB lues par app/app/models/sequelize-client.js
       DB_HOST: ${{ secrets.DB_HOST }}
       DB_PORT: ${{ secrets.DB_PORT }}
       DB_NAME: ${{ secrets.DB_NAME }}
       DB_USER: ${{ secrets.DB_USER }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      # Autres vars appli si nécessaires à tes tests
       PORT: ${{ secrets.PORT }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       GMAIL_USER: ${{ secrets.GMAIL_USER }}
@@ -31,32 +32,40 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # On démarre UNIQUEMENT Postgres du docker-compose du repo back
       - name: Start Postgres (compose)
         run: |
           docker compose up -d postgresql
-          # Wait for Postgres readiness
+          # Attendre que Postgres réponde
           for i in {1..30}; do
             docker exec postgrecontainer pg_isready -U "${DB_USER}" -d "${DB_NAME}" && break
             sleep 1
           done
 
-      - name: Build backend image (dev target)
+      # Build du backend (target dev si tu l'as configuré ainsi)
+      - name: Build backend image
         run: docker compose build backend
 
-      - name: Run DB migrations (using DATABASE_URL)
-        run: |
-          docker compose run --rm \
-            -e NODE_ENV=test \
-            -e DATABASE_URL="${DATABASE_URL}" \
-            backend sh -lc "npm ci && npx sequelize-cli db:migrate --url \"${DATABASE_URL}\""
-
+      # Lancer les tests backend dans le conteneur
       - name: Run backend tests
         run: |
           docker compose run --rm \
             -e NODE_ENV=test \
-            backend sh -lc "npm test -- --ci"
+            -e DB_HOST="${DB_HOST}" \
+            -e DB_PORT="${DB_PORT}" \
+            -e DB_NAME="${DB_NAME}" \
+            -e DB_USER="${DB_USER}" \
+            -e DB_PASSWORD="${DB_PASSWORD}" \
+            -e PORT="${PORT}" \
+            -e JWT_SECRET="${JWT_SECRET}" \
+            -e GMAIL_USER="${GMAIL_USER}" \
+            -e EMAIL_PASS="${EMAIL_PASS}" \
+            -e RECAPTCHA_SECRET_KEY="${RECAPTCHA_SECRET_KEY}" \
+            -e FRONT_URL="${FRONT_URL}" \
+            backend sh -lc "npm ci && npm test -- --ci --watchAll=false"
 
       - name: Compose down
         if: always()
         run: docker compose down -v
+
 
