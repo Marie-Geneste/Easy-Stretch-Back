@@ -1,5 +1,5 @@
 const request = require('supertest');
-const app = require('../../app'); // adapte le chemin
+const app = require('../../index');
 
 test('health', async () => {
   const res = await request(app).get('/health');
