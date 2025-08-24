@@ -1,13 +1,6 @@
 // Charger les variables d'environnements
 require("dotenv/config");
 
-console.log('--- ENV VARIABLES ---');
-console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Loaded ✅' : 'Not found ❌');
-console.log('GMAIL_USER:', process.env.GMAIL_USER || 'Not found ❌');
-console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? 'Loaded ✅' : 'Not found ❌');
-console.log('FRONT_URL:', process.env.FRONT_URL || 'Not found ❌');
-console.log('---------------------');
-
 // Import des dépendances
 const express = require("express");
 const cors = require("cors");
