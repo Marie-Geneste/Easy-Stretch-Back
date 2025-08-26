@@ -6,17 +6,18 @@ FROM node:24 AS dev
 
 WORKDIR /Easy-Stretch-Back
 
-COPY ./app app
 COPY package.json .
-COPY index.js .
 
 RUN npm install 
+
+COPY ./app app
+COPY index.js .
 
 ENV NODE_ENV=development
 ENV PORT=3000
 EXPOSE 3000
 
-CMD ["npx", "nodemon", "index.js"]
+CMD ["node","index.js"]
 
 
 
