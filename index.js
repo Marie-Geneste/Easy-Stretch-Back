@@ -14,10 +14,11 @@ const router = require("./app/routers");
 // Créer l'app
 const app = express();
 
-// On autorise les requêtes Cross-Origin, qui par défaut seraient bloquées.
+// On autorise les requêtes Cross-Origin suivantes
 app.use(cors({
-    origin: "*",
-    // origin: ["https://ostretch-back.up.railway.app"]
+    origin:["https://easy-stretch.netlify.app", "http://localhost:3001"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET","POST","DELETE","PUT","PATCH","OPTIONS"],
 }));
 
 // On limite le nombre de requête des clients
