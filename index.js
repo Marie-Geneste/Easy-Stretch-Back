@@ -11,6 +11,10 @@ const userMiddleware = require("./app/middleware/userMiddleware");
 const router = require("./app/routers");
 // const userMiddleware = require("./app/middleware/userMiddleware");
 
+//import swagger
+const swaggerUi = require("swagger-ui-express");
+const swaggerJSDoc = require("swagger-jsdoc");
+
 // Créer l'app
 const app = express();
 
@@ -38,12 +42,6 @@ app.use(express.json());
 // req.token en global si jamais il y a
 app.use(userMiddleware.decodeToken);
 
-//multer
-// const multer = require("multer");
-// const bodyParser = multer();
-
-// on utlise .none() pour dire qu'on attends pas de fichier, uniquement des inputs "classiques" !
-// app.use( bodyParser.none() );
 
 // Pour un test
 app.get('/health', (req, res) => res.status(200).send('ok'));
@@ -51,6 +49,44 @@ app.get('/health', (req, res) => res.status(200).send('ok'));
 
 // Router
 app.use(router);
+
+const swaggerSpec = swaggerJSDoc({
+    definition: {
+        openapi: "3.0.3",
+        info: {
+            title: "Easy Stretch API",
+            version: "1.0.0",
+            description: "Documentation OpenAPI de l’API Easy Stretch",
+        },
+        servers: [
+            { url: "http://localhost:3000", description: "Dev" },
+            { url: "https://easy-stretch-back.onrender.com", description: "Prod" }
+        ],
+        components: {
+            securitySchemes: {
+                bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" }
+            },
+            schemas: {
+                Stretch: {
+                    type: "object",
+                    properties: {
+                        id: { type: "integer", example: 1 },
+                        name: { type: "string", example: "Étirement ischio-jambiers" },
+                        description: { type: "string" },
+                        main_image: { type: "string", format: "uri" },
+                        description_image: { type: "string", format: "uri" },
+                        category_id: { type: "integer", example: 2 }
+                    },
+                    required: ["id", "name"]
+                }
+            }
+        },
+        security: [{ bearerAuth: [] }]
+    },
+    apis: ["./app/**/*.js", "./routes/**/*.js"], // fichiers où on mets des blocs JSDoc
+});
+
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Lancer l'app si pas en env de test
 const port = process.env.PORT || 3000;

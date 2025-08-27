@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/O-clock-Maya/projet-06-o-stretch-back#readme",
   "dependencies": {
+    "axios": "^1.11.0",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.1",
     "cors": "^2.8.5",
@@ -32,7 +33,9 @@
     "nodemailer": "^6.9.1",
     "pg": "^8.9.0",
     "sanitize-html": "^2.10.0",
-    "sequelize": "^6.28.1"
+    "sequelize": "^6.28.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "eslint": "^8.34.0",

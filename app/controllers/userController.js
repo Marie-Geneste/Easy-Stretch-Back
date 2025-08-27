@@ -7,6 +7,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const sanitizeHtml = require('sanitize-html');
 const sendEmail = require('../utils/sendEmailForResetPwd');
+const axios = require('axios');
 
 // Function to hash a given password
 async function hashPassword(password) {
@@ -29,6 +30,9 @@ const userController = {
             captchaToken
         } = req.body;
 
+        //rôle user en dur, à changer plus tard avec variable env
+        const defaultRoleId = 2;
+
         // Sanitize user inputs to prevent XSS attacks
         const cleanUsername = sanitizeHtml(username);
         const cleanEmail = sanitizeHtml(email);
@@ -50,13 +54,13 @@ const userController = {
 
         try {
 
-             // Vérifier le captcha auprès de Google
+            // Vérifier le captcha auprès de Google
             const captchaResponse = await axios.post(
-            `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${captchaToken}`
+                `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${captchaToken}`
             );
 
             if (!captchaResponse.data.success) {
-            return res.status(400).json({ message: "Captcha invalide" });
+                return res.status(400).json({ message: "Captcha invalide" });
             }
             
             // Check if the user already exists
@@ -77,7 +81,8 @@ const userController = {
             const newUser = await User.create({
                 username: cleanUsername,
                 email: cleanEmail,
-                password: hashedPassword
+                password: hashedPassword,
+                role_id: defaultRoleId
             });
 
             // Send a success response with user information
@@ -208,6 +213,9 @@ const userController = {
         //on destructure les infos du user
         const {  username } = req.body;
 
+        // Sanitize user inputs to prevent XSS attacks
+        const cleanUsername = sanitizeHtml(username);
+
         // if (!email && !username && !password) { // Si le client veut faire un update sans préciser aucun nouveau champs, on bloque.
         //     return res.status(400).json({ error: "Invalid body. Should provide at least a 'username', 'email' or 'password' property" });
         // }
@@ -216,7 +224,7 @@ const userController = {
         const userToUpdate = await User.findByPk(userId);
 
         if (username !== undefined) { // Si il y a une nouveau pseudo
-            userToUpdate.username = username;
+            userToUpdate.username = cleanUsername;
         }
 
         await userToUpdate.save();
@@ -264,7 +272,7 @@ const userController = {
         try {
             const user = await User.findOne({ where: { email } });
             if (!user) {
-            return res.status(404).json({ message: 'Aucun utilisateur trouvé avec cet email.' });
+                return res.status(404).json({ message: 'Aucun utilisateur trouvé avec cet email.' });
             }
 
             // Générer un token JWT avec expiration courte
@@ -294,7 +302,7 @@ const userController = {
             const user = await User.findByPk(decoded.userId);
 
             if (!user) {
-            return res.status(404).json({ message: 'Utilisateur introuvable.' });
+                return res.status(404).json({ message: 'Utilisateur introuvable.' });
             }
 
             const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -305,7 +313,7 @@ const userController = {
         } catch (err) {
             console.error(err);
             if (err.name === 'TokenExpiredError') {
-            return res.status(400).json({ message: 'Le lien de réinitialisation a expiré.' });
+                return res.status(400).json({ message: 'Le lien de réinitialisation a expiré.' });
             }
             res.status(400).json({ message: 'Lien invalide.' });
         }
