@@ -33,6 +33,9 @@ const stretchController = {
             const stretchId = req.params.id;
             //trouver l'user correspondant à l'id
             const stretch = await Stretch.findByPk(stretchId);
+            if (!stretch) {
+                return res.status(404).json({ error: 'Stretch not found' });
+            }
             res.status(200).json(stretch);
 
         // Permet de d'indique que le serveur a rencontré un problème inattendu qui l'empêche de répondre à la requête.         
