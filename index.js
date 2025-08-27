@@ -42,12 +42,6 @@ app.use(express.json());
 // req.token en global si jamais il y a
 app.use(userMiddleware.decodeToken);
 
-//multer
-// const multer = require("multer");
-// const bodyParser = multer();
-
-// on utlise .none() pour dire qu'on attends pas de fichier, uniquement des inputs "classiques" !
-// app.use( bodyParser.none() );
 
 // Pour un test
 app.get('/health', (req, res) => res.status(200).send('ok'));

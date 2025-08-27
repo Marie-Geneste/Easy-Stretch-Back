@@ -213,6 +213,9 @@ const userController = {
         //on destructure les infos du user
         const {  username } = req.body;
 
+        // Sanitize user inputs to prevent XSS attacks
+        const cleanUsername = sanitizeHtml(username);
+
         // if (!email && !username && !password) { // Si le client veut faire un update sans préciser aucun nouveau champs, on bloque.
         //     return res.status(400).json({ error: "Invalid body. Should provide at least a 'username', 'email' or 'password' property" });
         // }
@@ -221,7 +224,7 @@ const userController = {
         const userToUpdate = await User.findByPk(userId);
 
         if (username !== undefined) { // Si il y a une nouveau pseudo
-            userToUpdate.username = username;
+            userToUpdate.username = cleanUsername;
         }
 
         await userToUpdate.save();
